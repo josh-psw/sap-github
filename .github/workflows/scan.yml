@@ -7,9 +7,11 @@ jobs:
   burp-dast-scan:
     name: burp dast scan
     permissions:
-      checks: write
       contents: read
     runs-on: ubuntu-latest
+    env:
+      BURP_ENTERPRISE_API_KEY: ${{ secrets.BURP_API_KEY }}
+      BURP_ENTERPRISE_SERVER_URL: ${{ secrets.BURP_URL }}
     if: (github.actor != 'dependabot[bot]')
     steps:
       - name: checkout
@@ -17,5 +19,4 @@ jobs:
         uses: actions/checkout@v3
       - name: run scan
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          SITE_NAME=`uuidgen` APPLICATION_URL=ginandjuice.shop BURP_ENTERPRISE_API_KEY=$BURP_ENTERPRISE_API_KEY BURP_ENTERPRISE_SERVER_URL=$BURP_ENTERPRISE_SERVER_URL sh run-scan.sh
