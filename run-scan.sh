@@ -44,7 +44,7 @@ scan_status_body() {
         "operationName": "GetScan",
         "variables": {
             "input": {
-                "schedule_item_id": "$schedule_item_id"
+                "schedule_item_id": $schedule_item_id
             }
         }
     }'
