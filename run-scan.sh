@@ -91,9 +91,8 @@ make_request() {
 }
 
 poll_scan_status() {
-    local schedule_item_id="$1"
+    local scan_status_body="$1"
     local status=""
-    local scan_status_body=$(scan_status_body "$SCHEDULE_ITEM_ID")
 
     while true; do
         status=$(make_request "Check scan status" "$scan_status_body" ".data.scans[0].status" | tail -n1)
@@ -121,7 +120,13 @@ SCHEDULE_ITEM_ID=$(make_request "Start scan" "$SCAN_BODY" ".data.create_schedule
 
 # Poll for scan complete
 echo "Waiting for scan to complete"
-SCAN_STATUS=$(poll_scan_status $SCHEDULE_ITEM_ID | tail -n1)
+SCAN_STATUS_BODY=$(scan_status_body "$SCHEDULE_ITEM_ID")
+SCAN_ID=$(make_request "Scan ID" ".data.scans[0].id")
+
+SCAN_URL="$BURP_ENTERPRISE_SERVER_URL/scans/$SCAN_ID"
+echo "Scan started - view at $SCAN_URL"
+
+SCAN_STATUS=$(poll_scan_status $SCAN_STATUS_BODY | tail -n1)
 
 if [ -z "$SCAN_STATUS" ]; then
     echo "Something has gone wrong - scan status is empty. Exiting with -1"
@@ -133,7 +138,7 @@ elif [ "$SCAN_STATUS" = "cancelled" ]; then
     echo "Scan was cancelled. Exiting with -3"
     exit -3
 elif [ "$SCAN_STATUS" = "succeeded" ]; then
-    echo "Scan completed. View the results in the dashboard"
+    echo "Scan completed. View the results at $SCAN_URL"
 else
     echo "Unexpected scan status: $SCAN_STATUS. Exiting with -4"
     exit -4
